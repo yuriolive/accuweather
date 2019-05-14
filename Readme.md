@@ -20,11 +20,11 @@
 
 As queries a seguir foram propostas para responder as seguintes perguntas:
 
-  • Qual cidade tem a maior altitude?
-  • Qual cidade tem a menor população?
-  • Qual o volume acumulado de precipitação (chuva) por cidade em um período de tempo escolhido dinamicamente?
-  • Qual a amplitude térmica diária (diferença entre as mínimas e máximas temperaturas registradas em um dia) média por cidade?
-  • Dentre as cidades escolhidas, há alguma correlação entre altitude e amplitude térmica diária?
+  - Qual cidade tem a maior altitude?
+  - Qual cidade tem a menor população?
+  - Qual o volume acumulado de precipitação (chuva) por cidade em um período de tempo escolhido dinamicamente?
+  - Qual a amplitude térmica diária (diferença entre as mínimas e máximas temperaturas registradas em um dia) média por cidade?
+  - Dentre as cidades escolhidas, há alguma correlação entre altitude e amplitude térmica diária?
 
 Foi utilizado o Redash ([https://github.com/getredash/redash](https://github.com/getredash/redash)) com integração ao AWS Athena. O AWS Glue foi utilizado para gerar as tabelas no AWS Athena. Seguem as queries adicionadas ao Redash:
 
@@ -77,5 +77,5 @@ Foi utilizado o Redash ([https://github.com/getredash/redash](https://github.com
 
 ## Melhorias
 
-- Para caso o número de cidades a ser processado extrapole o limite de tempo de 15min do AWS Lambda poderia ser implementado um pipeline anterior que por exemplo, consumiria um CSV, adicionaria em uma fila que seria consumida pelo AWS Lambda.
+- Para caso o número de cidades a ser processado extrapole o limite de tempo de 15 minutos do AWS Lambda poderia ser implementado um pipeline anterior que por exemplo, consumiria um CSV, adicionaria em uma fila que seria consumida pelo AWS Lambda.
 - Caso o tamanho do record a ser escrito no Firehose supere 1000KB (limite do **putRecord**) poderia dividir em chunks e usar a chamada **putRecordBatch**.

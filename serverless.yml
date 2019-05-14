@@ -1,0 +1,131 @@
+service: accuweather # service name
+
+plugins:
+  - serverless-iam-roles-per-function
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: ${opt:stage, 'dev'} # set the default stage used. Default is dev
+  region: ${opt:region, 'us-east-1'} # overwrite the default region used. Default is us-east-1
+
+custom:
+  apiKey: ${opt:apiKey, 'PPcoenbNcLKt1iG2s7GFAEXAMPLE'}
+  bucketName: ${opt:bucketName, 'accuweather-example'}
+
+functions:
+  getLocationsInfo:
+    handler: handler.getLocationsInfo
+    events:
+      - schedule: rate(365 days)
+    environment:
+      LOCATIONS_DELIVERY_STREAM: !Ref LocationsDeliveryStream
+      ACCUWEATHER_API_KEY: ${self:custom.apiKey}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - firehose:PutRecord
+          - firehose:PutRecordBatch
+        Resource:
+          Fn::GetAtt: 
+            - LocationsDeliveryStream
+            - Arn
+    memorySize: 128
+    timeout: 10
+  getConditionsInfo:
+    handler: handler.getConditionsInfo
+    events:
+      - schedule: cron(1 3 * * ? *) # 1 minute after midnight in Brazil (GMT -3)
+    environment:
+      CONDITIONS_DELIVERY_STREAM: !Ref ConditionsDeliveryStream
+      ACCUWEATHER_API_KEY: ${self:custom.apiKey}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - firehose:PutRecord
+          - firehose:PutRecordBatch
+        Resource:
+          Fn::GetAtt: 
+            - ConditionsDeliveryStream
+            - Arn
+    memorySize: 128
+    timeout: 10
+
+# CloudFormation resources
+resources:
+  Resources:
+    AccuweatherBucket:
+      Type: AWS::S3::Bucket
+      DeletionPolicy: Retain
+      Properties:
+        BucketName: ${self:custom.bucketName}
+    AccuweatherFirehoseToS3Role:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: AccuweatherFirehoseToS3Role
+        AssumeRolePolicyDocument:
+          Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - firehose.amazonaws.com
+            Action:
+            - sts:AssumeRole
+        Policies:
+        - PolicyName: AccuweatherFirehoseToS3Policy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                - s3:AbortMultipartUpload
+                - s3:GetBucketLocation
+                - s3:GetObject
+                - s3:ListBucket
+                - s3:ListBucketMultipartUploads
+                - s3:PutObject
+                Resource:
+                  - Fn::GetAtt: 
+                      - AccuweatherBucket
+                      - Arn
+                  - Fn::Join:
+                      - ''
+                      - - Fn::GetAtt: ['AccuweatherBucket', 'Arn']
+                        - '/*'
+    LocationsDeliveryStream:
+      Type: AWS::KinesisFirehose::DeliveryStream
+      Properties:
+        DeliveryStreamName: LocationsDeliveryStream
+        S3DestinationConfiguration:
+          BucketARN:
+            Fn::Join:
+            - ''
+            - - 'arn:aws:s3:::'
+              - Ref: AccuweatherBucket
+          BufferingHints:
+            IntervalInSeconds: 60
+            SizeInMBs: 1
+          CompressionFormat: 'GZIP'
+          Prefix: 'locations/'
+          RoleARN: 
+            Fn::GetAtt: 
+              - AccuweatherFirehoseToS3Role
+              - Arn
+    ConditionsDeliveryStream:
+      Type: AWS::KinesisFirehose::DeliveryStream
+      Properties:
+        DeliveryStreamName: ConditionsDeliveryStream
+        S3DestinationConfiguration:
+          BucketARN:
+            Fn::Join:
+            - ''
+            - - 'arn:aws:s3:::'
+              - Ref: AccuweatherBucket
+          BufferingHints:
+            IntervalInSeconds: 60
+            SizeInMBs: 1
+          CompressionFormat: 'GZIP'
+          Prefix: 'conditions/'
+          RoleARN: 
+            Fn::GetAtt: 
+              - AccuweatherFirehoseToS3Role
+              - Arn

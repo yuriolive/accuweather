@@ -1,0 +1,44 @@
+{
+  "countryCode":  "BR",
+  "cities": [{
+    "name": "São Paulo",
+    "adminCode": "SP",
+    "locationKey": "45881"
+  }, {
+    "name": "Rio de Janeiro",
+    "adminCode": "RJ",
+    "locationKey": "45449"
+  }, {
+    "name": "Brasília",
+    "adminCode": "DF",
+    "locationKey": "43348"
+  }, {
+    "name": "Salvador",
+    "adminCode": "BA",
+    "locationKey": "43080"
+  }, {
+    "name": "Fortaleza",
+    "adminCode": "CE",
+    "locationKey": "43346"
+  }, {
+    "name": "Belo Horizonte",
+    "adminCode": "MG",
+    "locationKey": "44403"
+  }, {
+    "name": "Manaus",
+    "adminCode": "AM",
+    "locationKey": "42471"
+  }, {
+    "name": "Curitiba",
+    "adminCode": "PR",
+    "locationKey": "44944"
+  }, {
+    "name": "Recife",
+    "adminCode": "PE",
+    "locationKey": "45090"
+  }, {
+    "name": "Porto Alegre",
+    "adminCode": "RS",
+    "locationKey": "45561"
+  }]
+}
